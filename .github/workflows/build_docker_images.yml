@@ -53,8 +53,8 @@ jobs:
         image: [tests/producer-consumer]
     steps:
     - uses: actions/checkout@v2
-    - name: navigate to directory
-      run: cd ./function-images/${{ matrix.image }}
     - name: docker-compose build images
-      run: docker-compose up -d
+      run: |
+        cd ./function-images/${{ matrix.image }}
+        docker-compose up -d
         
