@@ -10,6 +10,8 @@ services:
         build:
             context: .
             target: producer
+        ports: 
+            - "3031:3031"
         command: go run ./producer/producer.go --addr consumer
         depends_on:
             - consumer

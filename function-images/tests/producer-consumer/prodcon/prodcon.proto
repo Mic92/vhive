@@ -5,9 +5,13 @@ option go_package = "github.com/MBaczun/producer-consumer/prodcon";
 
 package prodcon;
 
-service Consumer {
+service Producer_Consumer {
     rpc ConsumeSingleString(String) returns (Ack) {}
     rpc ConsumeStream(stream String) returns (Ack) {}
+}
+
+service Client_Producer {
+    rpc ProduceStrings(Int) returns (Empty);
 }
 
 message String {
@@ -17,3 +21,9 @@ message String {
 message Ack {
     bool value = 1;
 }
+
+message Int {
+    int32 value = 1;
+}
+
+message Empty {}

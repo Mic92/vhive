@@ -15,7 +15,7 @@ import (
 
 type consumerServer struct {
 	//embeding??
-	pb.UnimplementedConsumerServer
+	pb.UnimplementedProducer_ConsumerServer
 }
 
 func (s *consumerServer) ConsumeSingleString(ctx context.Context, str *pb.String) (*pb.Ack, error) {
@@ -23,7 +23,7 @@ func (s *consumerServer) ConsumeSingleString(ctx context.Context, str *pb.String
 	return &pb.Ack{Value: true}, nil
 }
 
-func (s *consumerServer) ConsumeStream(stream pb.Consumer_ConsumeStreamServer) error {
+func (s *consumerServer) ConsumeStream(stream pb.Producer_Consumer_ConsumeStreamServer) error {
 	for {
 		str, err := stream.Recv()
 		if err == io.EOF {
@@ -47,7 +47,7 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 	s := consumerServer{}
-	pb.RegisterConsumerServer(grpcServer, &s)
+	pb.RegisterProducer_ConsumerServer(grpcServer, &s)
 
 	fmt.Println("Server Started")
 

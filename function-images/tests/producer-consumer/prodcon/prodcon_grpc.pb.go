@@ -14,55 +14,55 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// ConsumerClient is the client API for Consumer service.
+// Producer_ConsumerClient is the client API for Producer_Consumer service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type ConsumerClient interface {
+type Producer_ConsumerClient interface {
 	ConsumeSingleString(ctx context.Context, in *String, opts ...grpc.CallOption) (*Ack, error)
-	ConsumeStream(ctx context.Context, opts ...grpc.CallOption) (Consumer_ConsumeStreamClient, error)
+	ConsumeStream(ctx context.Context, opts ...grpc.CallOption) (Producer_Consumer_ConsumeStreamClient, error)
 }
 
-type consumerClient struct {
+type producer_ConsumerClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewConsumerClient(cc grpc.ClientConnInterface) ConsumerClient {
-	return &consumerClient{cc}
+func NewProducer_ConsumerClient(cc grpc.ClientConnInterface) Producer_ConsumerClient {
+	return &producer_ConsumerClient{cc}
 }
 
-func (c *consumerClient) ConsumeSingleString(ctx context.Context, in *String, opts ...grpc.CallOption) (*Ack, error) {
+func (c *producer_ConsumerClient) ConsumeSingleString(ctx context.Context, in *String, opts ...grpc.CallOption) (*Ack, error) {
 	out := new(Ack)
-	err := c.cc.Invoke(ctx, "/prodcon.Consumer/ConsumeSingleString", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/prodcon.Producer_Consumer/ConsumeSingleString", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *consumerClient) ConsumeStream(ctx context.Context, opts ...grpc.CallOption) (Consumer_ConsumeStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Consumer_ServiceDesc.Streams[0], "/prodcon.Consumer/ConsumeStream", opts...)
+func (c *producer_ConsumerClient) ConsumeStream(ctx context.Context, opts ...grpc.CallOption) (Producer_Consumer_ConsumeStreamClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Producer_Consumer_ServiceDesc.Streams[0], "/prodcon.Producer_Consumer/ConsumeStream", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &consumerConsumeStreamClient{stream}
+	x := &producer_ConsumerConsumeStreamClient{stream}
 	return x, nil
 }
 
-type Consumer_ConsumeStreamClient interface {
+type Producer_Consumer_ConsumeStreamClient interface {
 	Send(*String) error
 	CloseAndRecv() (*Ack, error)
 	grpc.ClientStream
 }
 
-type consumerConsumeStreamClient struct {
+type producer_ConsumerConsumeStreamClient struct {
 	grpc.ClientStream
 }
 
-func (x *consumerConsumeStreamClient) Send(m *String) error {
+func (x *producer_ConsumerConsumeStreamClient) Send(m *String) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *consumerConsumeStreamClient) CloseAndRecv() (*Ack, error) {
+func (x *producer_ConsumerConsumeStreamClient) CloseAndRecv() (*Ack, error) {
 	if err := x.ClientStream.CloseSend(); err != nil {
 		return nil, err
 	}
@@ -73,75 +73,75 @@ func (x *consumerConsumeStreamClient) CloseAndRecv() (*Ack, error) {
 	return m, nil
 }
 
-// ConsumerServer is the server API for Consumer service.
-// All implementations must embed UnimplementedConsumerServer
+// Producer_ConsumerServer is the server API for Producer_Consumer service.
+// All implementations must embed UnimplementedProducer_ConsumerServer
 // for forward compatibility
-type ConsumerServer interface {
+type Producer_ConsumerServer interface {
 	ConsumeSingleString(context.Context, *String) (*Ack, error)
-	ConsumeStream(Consumer_ConsumeStreamServer) error
-	mustEmbedUnimplementedConsumerServer()
+	ConsumeStream(Producer_Consumer_ConsumeStreamServer) error
+	mustEmbedUnimplementedProducer_ConsumerServer()
 }
 
-// UnimplementedConsumerServer must be embedded to have forward compatible implementations.
-type UnimplementedConsumerServer struct {
+// UnimplementedProducer_ConsumerServer must be embedded to have forward compatible implementations.
+type UnimplementedProducer_ConsumerServer struct {
 }
 
-func (UnimplementedConsumerServer) ConsumeSingleString(context.Context, *String) (*Ack, error) {
+func (UnimplementedProducer_ConsumerServer) ConsumeSingleString(context.Context, *String) (*Ack, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ConsumeSingleString not implemented")
 }
-func (UnimplementedConsumerServer) ConsumeStream(Consumer_ConsumeStreamServer) error {
+func (UnimplementedProducer_ConsumerServer) ConsumeStream(Producer_Consumer_ConsumeStreamServer) error {
 	return status.Errorf(codes.Unimplemented, "method ConsumeStream not implemented")
 }
-func (UnimplementedConsumerServer) mustEmbedUnimplementedConsumerServer() {}
+func (UnimplementedProducer_ConsumerServer) mustEmbedUnimplementedProducer_ConsumerServer() {}
 
-// UnsafeConsumerServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to ConsumerServer will
+// UnsafeProducer_ConsumerServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to Producer_ConsumerServer will
 // result in compilation errors.
-type UnsafeConsumerServer interface {
-	mustEmbedUnimplementedConsumerServer()
+type UnsafeProducer_ConsumerServer interface {
+	mustEmbedUnimplementedProducer_ConsumerServer()
 }
 
-func RegisterConsumerServer(s grpc.ServiceRegistrar, srv ConsumerServer) {
-	s.RegisterService(&Consumer_ServiceDesc, srv)
+func RegisterProducer_ConsumerServer(s grpc.ServiceRegistrar, srv Producer_ConsumerServer) {
+	s.RegisterService(&Producer_Consumer_ServiceDesc, srv)
 }
 
-func _Consumer_ConsumeSingleString_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Producer_Consumer_ConsumeSingleString_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(String)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ConsumerServer).ConsumeSingleString(ctx, in)
+		return srv.(Producer_ConsumerServer).ConsumeSingleString(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/prodcon.Consumer/ConsumeSingleString",
+		FullMethod: "/prodcon.Producer_Consumer/ConsumeSingleString",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ConsumerServer).ConsumeSingleString(ctx, req.(*String))
+		return srv.(Producer_ConsumerServer).ConsumeSingleString(ctx, req.(*String))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Consumer_ConsumeStream_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(ConsumerServer).ConsumeStream(&consumerConsumeStreamServer{stream})
+func _Producer_Consumer_ConsumeStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(Producer_ConsumerServer).ConsumeStream(&producer_ConsumerConsumeStreamServer{stream})
 }
 
-type Consumer_ConsumeStreamServer interface {
+type Producer_Consumer_ConsumeStreamServer interface {
 	SendAndClose(*Ack) error
 	Recv() (*String, error)
 	grpc.ServerStream
 }
 
-type consumerConsumeStreamServer struct {
+type producer_ConsumerConsumeStreamServer struct {
 	grpc.ServerStream
 }
 
-func (x *consumerConsumeStreamServer) SendAndClose(m *Ack) error {
+func (x *producer_ConsumerConsumeStreamServer) SendAndClose(m *Ack) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *consumerConsumeStreamServer) Recv() (*String, error) {
+func (x *producer_ConsumerConsumeStreamServer) Recv() (*String, error) {
 	m := new(String)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -149,24 +149,110 @@ func (x *consumerConsumeStreamServer) Recv() (*String, error) {
 	return m, nil
 }
 
-// Consumer_ServiceDesc is the grpc.ServiceDesc for Consumer service.
+// Producer_Consumer_ServiceDesc is the grpc.ServiceDesc for Producer_Consumer service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Consumer_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "prodcon.Consumer",
-	HandlerType: (*ConsumerServer)(nil),
+var Producer_Consumer_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "prodcon.Producer_Consumer",
+	HandlerType: (*Producer_ConsumerServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "ConsumeSingleString",
-			Handler:    _Consumer_ConsumeSingleString_Handler,
+			Handler:    _Producer_Consumer_ConsumeSingleString_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "ConsumeStream",
-			Handler:       _Consumer_ConsumeStream_Handler,
+			Handler:       _Producer_Consumer_ConsumeStream_Handler,
 			ClientStreams: true,
 		},
 	},
-	Metadata: "prodcon/prodcon.proto",
+	Metadata: "prodcon.proto",
+}
+
+// Client_ProducerClient is the client API for Client_Producer service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type Client_ProducerClient interface {
+	ProduceStrings(ctx context.Context, in *Int, opts ...grpc.CallOption) (*Empty, error)
+}
+
+type client_ProducerClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewClient_ProducerClient(cc grpc.ClientConnInterface) Client_ProducerClient {
+	return &client_ProducerClient{cc}
+}
+
+func (c *client_ProducerClient) ProduceStrings(ctx context.Context, in *Int, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/prodcon.Client_Producer/ProduceStrings", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// Client_ProducerServer is the server API for Client_Producer service.
+// All implementations must embed UnimplementedClient_ProducerServer
+// for forward compatibility
+type Client_ProducerServer interface {
+	ProduceStrings(context.Context, *Int) (*Empty, error)
+	mustEmbedUnimplementedClient_ProducerServer()
+}
+
+// UnimplementedClient_ProducerServer must be embedded to have forward compatible implementations.
+type UnimplementedClient_ProducerServer struct {
+}
+
+func (UnimplementedClient_ProducerServer) ProduceStrings(context.Context, *Int) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ProduceStrings not implemented")
+}
+func (UnimplementedClient_ProducerServer) mustEmbedUnimplementedClient_ProducerServer() {}
+
+// UnsafeClient_ProducerServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to Client_ProducerServer will
+// result in compilation errors.
+type UnsafeClient_ProducerServer interface {
+	mustEmbedUnimplementedClient_ProducerServer()
+}
+
+func RegisterClient_ProducerServer(s grpc.ServiceRegistrar, srv Client_ProducerServer) {
+	s.RegisterService(&Client_Producer_ServiceDesc, srv)
+}
+
+func _Client_Producer_ProduceStrings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Int)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(Client_ProducerServer).ProduceStrings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/prodcon.Client_Producer/ProduceStrings",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(Client_ProducerServer).ProduceStrings(ctx, req.(*Int))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// Client_Producer_ServiceDesc is the grpc.ServiceDesc for Client_Producer service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var Client_Producer_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "prodcon.Client_Producer",
+	HandlerType: (*Client_ProducerServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "ProduceStrings",
+			Handler:    _Client_Producer_ProduceStrings_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "prodcon.proto",
 }
