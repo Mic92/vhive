@@ -1,28 +1,28 @@
 
 syntax = "proto3";
 
-option go_package = "github.com/MBaczun/producer-consumer/prodcon";
+option go_package = "tests/chained-functions-serving/proto";
 
 package prodcon;
 
-service Producer_Consumer {
-    rpc ConsumeSingleString(String) returns (Ack) {}
-    rpc ConsumeStream(stream String) returns (Ack) {}
+service ProducerConsumer {
+    rpc ConsumeString(ConsumeStringRequest) returns (ConsumeStringReply) {}
+    rpc ConsumeStream(stream ConsumeStringRequest) returns (ConsumeStringReply) {}
 }
 
-service Client_Producer {
-    rpc ProduceStrings(Int) returns (Empty);
+service ClientProducer {
+    rpc ProduceStrings(ProduceStringsRequest) returns (Empty);
 }
 
-message String {
+message ConsumeStringRequest {
     string value = 1;
 }
 
-message Ack {
+message ConsumeStringReply {
     bool value = 1;
 }
 
-message Int {
+message ProduceStringsRequest {
     int32 value = 1;
 }
 

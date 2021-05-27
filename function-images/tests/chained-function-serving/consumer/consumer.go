@@ -10,24 +10,23 @@ import (
 
 	"google.golang.org/grpc"
 
-	pb "github.com/MBaczun/producer-consumer/prodcon"
+	pb "tests/chained-functions-serving/proto"
 )
 
 type consumerServer struct {
-	//embeding??
-	pb.UnimplementedProducer_ConsumerServer
+	pb.UnimplementedProducerConsumerServer
 }
 
-func (s *consumerServer) ConsumeSingleString(ctx context.Context, str *pb.String) (*pb.Ack, error) {
+func (s *consumerServer) ConsumeString(ctx context.Context, str *pb.ConsumeStringRequest) (*pb.ConsumeStringReply, error) {
 	fmt.Printf("Consumed %v\n", str.Value)
-	return &pb.Ack{Value: true}, nil
+	return &pb.ConsumeStringReply{Value: true}, nil
 }
 
-func (s *consumerServer) ConsumeStream(stream pb.Producer_Consumer_ConsumeStreamServer) error {
+func (s *consumerServer) ConsumeStream(stream pb.ProducerConsumer_ConsumeStreamServer) error {
 	for {
 		str, err := stream.Recv()
 		if err == io.EOF {
-			return stream.SendAndClose(&pb.Ack{Value: true})
+			return stream.SendAndClose(&pb.ConsumeStringReply{Value: true})
 		}
 		if err != nil {
 			return err
@@ -47,7 +46,7 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 	s := consumerServer{}
-	pb.RegisterProducer_ConsumerServer(grpcServer, &s)
+	pb.RegisterProducerConsumerServer(grpcServer, &s)
 
 	fmt.Println("Server Started")
 

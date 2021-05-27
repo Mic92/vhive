@@ -10,15 +10,15 @@ import (
 
 	"google.golang.org/grpc"
 
-	pb "github.com/MBaczun/producer-consumer/prodcon"
+	pb "tests/chained-functions-serving/proto"
 )
 
 type producerServer struct {
-	producerClient pb.Producer_ConsumerClient
-	pb.UnimplementedClient_ProducerServer
+	producerClient pb.ProducerConsumerClient
+	pb.UnimplementedClientProducerServer
 }
 
-func (ps *producerServer) ProduceStrings(c context.Context, count *pb.Int) (*pb.Empty, error) {
+func (ps *producerServer) ProduceStrings(c context.Context, count *pb.ProduceStringsRequest) (*pb.Empty, error) {
 	if count.Value <= 0 {
 		return new(pb.Empty), nil
 	} else if count.Value == 1 {
@@ -33,15 +33,15 @@ func (ps *producerServer) ProduceStrings(c context.Context, count *pb.Int) (*pb.
 	return new(pb.Empty), nil
 }
 
-func produceSingleString(client pb.Producer_ConsumerClient, s string) {
-	ack, err := client.ConsumeSingleString(context.Background(), &pb.String{Value: s})
+func produceSingleString(client pb.ProducerConsumerClient, s string) {
+	ack, err := client.ConsumeString(context.Background(), &pb.ConsumeStringRequest{Value: s})
 	if err != nil {
 		log.Fatalf("client error in string consumption: %s", err)
 	}
 	fmt.Printf("(single) Ack: %v\n", ack.Value)
 }
 
-func produceStreamStrings(client pb.Producer_ConsumerClient, strings []string) {
+func produceStreamStrings(client pb.ProducerConsumerClient, strings []string) {
 	//make stream
 	stream, err := client.ConsumeStream(context.Background())
 	if err != nil {
@@ -50,7 +50,7 @@ func produceStreamStrings(client pb.Producer_ConsumerClient, strings []string) {
 
 	//stream strings
 	for _, s := range strings {
-		if err := stream.Send(&pb.String{Value: s}); err != nil {
+		if err := stream.Send(&pb.ConsumeStringRequest{Value: s}); err != nil {
 			log.Fatalf("%v.Send(%v) = %v", stream, s, err)
 		}
 	}
@@ -78,7 +78,7 @@ func main() {
 	}
 	defer conn.Close()
 
-	client := pb.NewProducer_ConsumerClient(conn)
+	client := pb.NewProducerConsumerClient(conn)
 
 	//produceSingleString(client, "hello")
 	//strings := []string{"Hello", "World", "one", "two", "three"}
@@ -93,7 +93,7 @@ func main() {
 	grpcServer := grpc.NewServer()
 	s := producerServer{}
 	s.producerClient = client
-	pb.RegisterClient_ProducerServer(grpcServer, &s)
+	pb.RegisterClientProducerServer(grpcServer, &s)
 
 	fmt.Println("Server Started")
 

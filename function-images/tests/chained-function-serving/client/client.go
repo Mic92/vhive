@@ -8,7 +8,7 @@ import (
 
 	"google.golang.org/grpc"
 
-	pb "github.com/MBaczun/producer-consumer/prodcon"
+	pb "tests/chained-functions-serving/proto"
 )
 
 func main() {
@@ -25,9 +25,8 @@ func main() {
 	}
 	defer conn.Close()
 
-	client := pb.NewClient_ProducerClient(conn)
-
-	client.ProduceStrings(context.Background(), &pb.Int{Value: int32(*strings)})
+	client := pb.NewClientProducerClient(conn)
+	client.ProduceStrings(context.Background(), &pb.ProduceStringsRequest{Value: int32(*strings)})
 
 	fmt.Printf("client closing")
 
