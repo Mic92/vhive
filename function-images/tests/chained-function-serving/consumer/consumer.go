@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"os"
 
 	"google.golang.org/grpc"
 
@@ -18,7 +19,7 @@ type consumerServer struct {
 }
 
 func (s *consumerServer) ConsumeString(ctx context.Context, str *pb.ConsumeStringRequest) (*pb.ConsumeStringReply, error) {
-	fmt.Printf("Consumed %v\n", str.Value)
+	log.Printf("[consumer] Consumed %v\n", str.Value)
 	return &pb.ConsumeStringReply{Value: true}, nil
 }
 
@@ -31,7 +32,7 @@ func (s *consumerServer) ConsumeStream(stream pb.ProducerConsumer_ConsumeStreamS
 		if err != nil {
 			return err
 		}
-		fmt.Printf("Consumed %v\n", str.Value)
+		log.Printf("[consumer] Consumed %v\n", str.Value)
 	}
 }
 
@@ -39,19 +40,27 @@ func main() {
 	port := flag.Int("p", 3030, "Port")
 	flag.Parse()
 
+	//set up log file
+	file, err := os.OpenFile("log/logs.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.SetOutput(file)
+
+	//set up server
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		log.Fatalf("[consumer] failed to listen: %v", err)
 	}
 
 	grpcServer := grpc.NewServer()
 	s := consumerServer{}
 	pb.RegisterProducerConsumerServer(grpcServer, &s)
 
-	fmt.Println("Server Started")
+	log.Println("[consumer] Server Started")
 
 	if err := grpcServer.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %s", err)
+		log.Fatalf("[consumer] failed to serve: %s", err)
 	}
 
 }

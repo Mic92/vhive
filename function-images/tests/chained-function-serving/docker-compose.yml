@@ -5,6 +5,8 @@ services:
         build:
             context: .
             target: consumer
+        volumes:
+            - log-volume:/app/log
 
     producer:
         build:
@@ -12,6 +14,11 @@ services:
             target: producer
         ports: 
             - "3031:3031"
+        volumes:
+            - log-volume:/app/log
         command: go run ./producer/producer.go --addr consumer
         depends_on:
             - consumer
+
+volumes:
+    log-volume:

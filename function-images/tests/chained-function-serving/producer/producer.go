@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"net"
+	"os"
 
 	"google.golang.org/grpc"
 
@@ -36,31 +37,31 @@ func (ps *producerServer) ProduceStrings(c context.Context, count *pb.ProduceStr
 func produceSingleString(client pb.ProducerConsumerClient, s string) {
 	ack, err := client.ConsumeString(context.Background(), &pb.ConsumeStringRequest{Value: s})
 	if err != nil {
-		log.Fatalf("client error in string consumption: %s", err)
+		log.Fatalf("[producer] client error in string consumption: %s", err)
 	}
-	fmt.Printf("(single) Ack: %v\n", ack.Value)
+	log.Printf("[producer] (single) Ack: %v\n", ack.Value)
 }
 
 func produceStreamStrings(client pb.ProducerConsumerClient, strings []string) {
 	//make stream
 	stream, err := client.ConsumeStream(context.Background())
 	if err != nil {
-		log.Fatalf("%v.RecordRoute(_) = _, %v", client, err)
+		log.Fatalf("[producer] %v.RecordRoute(_) = _, %v", client, err)
 	}
 
 	//stream strings
 	for _, s := range strings {
 		if err := stream.Send(&pb.ConsumeStringRequest{Value: s}); err != nil {
-			log.Fatalf("%v.Send(%v) = %v", stream, s, err)
+			log.Fatalf("[producer] %v.Send(%v) = %v", stream, s, err)
 		}
 	}
 
 	//end transaction
 	ack, err := stream.CloseAndRecv()
 	if err != nil {
-		log.Fatalf("%v.CloseAndRecv() got error %v, want %v", stream, err, nil)
+		log.Fatalf("[producer] %v.CloseAndRecv() got error %v, want %v", stream, err, nil)
 	}
-	fmt.Printf("(stream) Ack: %v\n", ack.Value)
+	log.Printf("[producer] (stream) Ack: %v\n", ack.Value)
 }
 
 func main() {
@@ -69,12 +70,19 @@ func main() {
 	serverPort := flag.Int("ps", 3031, "Server Port")
 	flag.Parse()
 
+	//set up log file
+	file, err := os.OpenFile("log/logs.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.SetOutput(file)
+
 	//client setup
-	fmt.Printf("Client using address: %v\n", *address)
+	log.Printf("[producer] Client using address: %v\n", *address)
 
 	conn, err := grpc.Dial(fmt.Sprintf("%v:%v", *address, *clientPort), grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("fail to dial: %s", err)
+		log.Fatalf("[producer] fail to dial: %s", err)
 	}
 	defer conn.Close()
 
@@ -87,7 +95,7 @@ func main() {
 	//server setup
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *serverPort))
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		log.Fatalf("[producer] failed to listen: %v", err)
 	}
 
 	grpcServer := grpc.NewServer()
@@ -95,10 +103,10 @@ func main() {
 	s.producerClient = client
 	pb.RegisterClientProducerServer(grpcServer, &s)
 
-	fmt.Println("Server Started")
+	log.Println("[producer] Server Started")
 
 	if err := grpcServer.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %s", err)
+		log.Fatalf("[producer] failed to serve: %s", err)
 	}
 
 }
