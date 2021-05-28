@@ -30,6 +30,7 @@ import (
 	"math/rand"
 	"net"
 	"os"
+	"strconv"
 
 	"google.golang.org/grpc"
 
@@ -87,10 +88,39 @@ func produceStreamStrings(client pb.ProducerConsumerClient, strings []string) {
 }
 
 func main() {
-	address := flag.String("addr", "localhost", "Server IP address")
-	clientPort := flag.Int("pc", 3030, "Client Port")
-	serverPort := flag.Int("ps", 3031, "Server Port")
+	flagAddress := flag.String("addr", "localhost", "Server IP address")
+	flagClientPort := flag.Int("pc", 3030, "Client Port")
+	flagServerPort := flag.Int("ps", 3031, "Server Port")
 	flag.Parse()
+
+	//get address (from env or flag)
+	address, ok := os.LookupEnv("ADDR")
+	if !ok {
+		address = *flagAddress
+	}
+	var clientPort int
+	clientPortStr, ok := os.LookupEnv("PORT_CLIENT")
+	if !ok {
+		clientPort = *flagClientPort
+	} else {
+		var err error
+		clientPort, err = strconv.Atoi(clientPortStr)
+		if err != nil {
+			log.Fatalf("[producer] PORT_CLIENT env variable is not int: %v", err)
+		}
+	}
+	//get client port (from env of flag)
+	var serverPort int
+	serverPortStr, ok := os.LookupEnv("PORT_SERVER")
+	if !ok {
+		serverPort = *flagServerPort
+	} else {
+		var err error
+		serverPort, err = strconv.Atoi(serverPortStr)
+		if err != nil {
+			log.Fatalf("[producer] PORT_CLIENT env variable is not int: %v", err)
+		}
+	}
 
 	//set up log file
 	file, err := os.OpenFile("log/logs.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
@@ -100,9 +130,9 @@ func main() {
 	log.SetOutput(file)
 
 	//client setup
-	log.Printf("[producer] Client using address: %v\n", *address)
+	log.Printf("[producer] Client using address: %v\n", address)
 
-	conn, err := grpc.Dial(fmt.Sprintf("%v:%v", *address, *clientPort), grpc.WithInsecure())
+	conn, err := grpc.Dial(fmt.Sprintf("%v:%v", address, clientPort), grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("[producer] fail to dial: %s", err)
 	}
@@ -115,7 +145,7 @@ func main() {
 	//produceStreamStrings(client, strings)
 
 	//server setup
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *serverPort))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", serverPort))
 	if err != nil {
 		log.Fatalf("[producer] failed to listen: %v", err)
 	}

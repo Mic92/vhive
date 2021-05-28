@@ -20,14 +20,32 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-FROM amd64/golang:1.16.4-alpine3.13 as consumer
+FROM amd64/golang:1.16.4-alpine3.13 as consumerBuilder
 
 WORKDIR /app
-COPY . .
-CMD ["go", "run", "./consumer/consumer.go"]
+COPY go.mod /app/go.mod
+COPY consumer/ /app/consumer/
+COPY proto/ /app/proto/
+RUN go mod download && \
+   CGO_ENABLED=0 GOOS=linux go build -v -o /main /app/consumer/consumer.go
+RUN mkdir /log
 
-FROM amd64/golang:1.16.4-alpine3.13 as producer
+FROM scratch as consumer
+COPY --from=consumerBuilder /main /main
+COPY --from=consumerBuilder /log/ /log/
+ENTRYPOINT [ "/main" ] 
+
+FROM amd64/golang:1.16.4-alpine3.13 as producerBuilder
 
 WORKDIR /app
-COPY . .
-CMD ["go", "run", "./producer/producer.go"]
+COPY go.mod /app/go.mod
+COPY producer/ /app/producer/
+COPY proto/ /app/proto/
+RUN go mod download && \
+   CGO_ENABLED=0 GOOS=linux go build -v -o /main /app/producer/producer.go
+RUN mkdir /log
+
+FROM scratch as producer
+COPY --from=producerBuilder /main /main
+COPY --from=producerBuilder /log/ /log/
+ENTRYPOINT [ "/main" ] 

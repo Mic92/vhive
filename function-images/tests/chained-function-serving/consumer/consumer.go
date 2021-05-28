@@ -30,6 +30,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strconv"
 
 	"google.golang.org/grpc"
 
@@ -59,8 +60,21 @@ func (s *consumerServer) ConsumeStream(stream pb.ProducerConsumer_ConsumeStreamS
 }
 
 func main() {
-	port := flag.Int("p", 3030, "Port")
+	portFlag := flag.Int("p", 3030, "Port")
 	flag.Parse()
+
+	//get client port (from env of flag)
+	var port int
+	portStr, ok := os.LookupEnv("PORT_SERVER")
+	if !ok {
+		port = *portFlag
+	} else {
+		var err error
+		port, err = strconv.Atoi(portStr)
+		if err != nil {
+			log.Fatalf("[producer] PORT_CLIENT env variable is not int: %v", err)
+		}
+	}
 
 	//set up log file
 	file, err := os.OpenFile("log/logs.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
@@ -70,7 +84,7 @@ func main() {
 	log.SetOutput(file)
 
 	//set up server
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		log.Fatalf("[consumer] failed to listen: %v", err)
 	}
