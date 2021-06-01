@@ -369,7 +369,7 @@ func (o *Orchestrator) getVMConfig(vm *misc.VM) *proto.CreateVMRequest {
 
 	return &proto.CreateVMRequest{
 		VMID:           vm.ID,
-		TimeoutSeconds: 100,
+		TimeoutSeconds: 300,
 		KernelArgs:     kernelArgs,
 		MachineCfg: &proto.FirecrackerMachineConfiguration{
 			VcpuCount:  1,
