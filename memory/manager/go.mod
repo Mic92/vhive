@@ -11,6 +11,6 @@ require (
 	github.com/ease-lab/vhive/metrics v0.0.0-00010101000000-000000000000
 	github.com/ftrvxmtrx/fd v0.0.0-20150925145434-c6d800382fff
 	github.com/sirupsen/logrus v1.8.0
-	golang.org/x/sys v0.0.0-20210304124612-50617c2ba197
-	gonum.org/v1/gonum v0.9.0
+	golang.org/x/sys v0.0.0-20211019181941-9d821ace8654
+	gonum.org/v1/gonum v0.12.0
 )
