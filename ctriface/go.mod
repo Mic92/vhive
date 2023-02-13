@@ -27,7 +27,7 @@ require (
 	github.com/go-multierror/multierror v1.0.2
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.8.0
-	github.com/stretchr/testify v1.7.0
-	google.golang.org/grpc v1.31.0
+	github.com/stretchr/testify v1.8.1
+	google.golang.org/grpc v1.53.0
 
 )
